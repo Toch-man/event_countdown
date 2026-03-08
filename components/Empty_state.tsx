@@ -41,7 +41,7 @@ export default function EmptyState({ darkMode = false }: EmptyStateProps) {
             darkMode ? "text-gray-300 text-sm" : "text-gray-700 text-sm"
           }
         >
-          <strong>💡 Tip:</strong> Add birthdays, deadlines, launches, or any
+          <strong> Tip:</strong> Add birthdays, deadlines, launches, or any
           event you're excited about!
         </p>
       </div>
