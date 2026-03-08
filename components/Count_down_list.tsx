@@ -1,4 +1,3 @@
-"use client";
 import Countdown_Card from "./Count_down_card";
 import EmptyState from "./Empty_state";
 import { Count_down } from "../lib/types";
@@ -7,15 +6,17 @@ interface CountdownListProps {
   countdowns: Count_down[];
   onEdit: (id: string, updated: Partial<Count_down>) => void;
   onDelete: (id: string) => void;
+  darkMode?: boolean;
 }
 
 export default function Countdown_List({
   countdowns,
   onEdit,
   onDelete,
+  darkMode = false,
 }: CountdownListProps) {
   if (countdowns.length === 0) {
-    return <EmptyState />;
+    return <EmptyState darkMode={darkMode} />;
   }
 
   const sorted = [...countdowns].sort((a, b) => {
@@ -41,6 +42,7 @@ export default function Countdown_List({
             countdown={countdown}
             onEdit={onEdit}
             onDelete={onDelete}
+            darkMode={darkMode}
           />
         ))}
       </div>

@@ -8,7 +8,7 @@ import {
   differenceInHours,
   differenceInMinutes,
   differenceInSeconds,
-  formatDistanceToNow,
+  differenceInMilliseconds,
 } from "date-fns";
 import EditCountdownModal from "./Edit_countdown_modal";
 import DeleteConfirmModal from "./Delete_confirm_modal";
@@ -18,20 +18,23 @@ interface CountdownCardProps {
   countdown: Count_down;
   onEdit: (id: string, updated: Partial<Count_down>) => void;
   onDelete: (id: string) => void;
+  darkMode?: boolean;
 }
 
 export default function Countdown_Card({
   countdown,
   onEdit,
   onDelete,
+  darkMode = false,
 }: CountdownCardProps) {
   const [timeLeft, setTimeLeft] = useState<Time_Left | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isCalculating, setIsCalculating] = useState(true);
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const calculateTimeLeft = () => {
+    const calculateTime = () => {
       const now = new Date();
       const targetDate = new Date(countdown.date);
 
@@ -43,6 +46,7 @@ export default function Countdown_Card({
           seconds: 0,
           isPast: true,
         });
+        setProgress(100);
         setIsCalculating(false);
         return;
       }
@@ -53,20 +57,31 @@ export default function Countdown_Card({
       const seconds = differenceInSeconds(targetDate, now) % 60;
 
       setTimeLeft({ days, hours, minutes, seconds, isPast: false });
+
+      // Progressive bar calculation
+      const totalMs =
+        targetDate.getTime() - new Date(countdown.createdAt).getTime();
+      const passedMs = now.getTime() - new Date(countdown.createdAt).getTime();
+      const percent = Math.min((passedMs / totalMs) * 100, 100);
+      setProgress(percent);
+
       setIsCalculating(false);
     };
 
-    calculateTimeLeft();
-    const interval = setInterval(calculateTimeLeft, 1000);
-
+    calculateTime();
+    const interval = setInterval(calculateTime, 1000);
     return () => clearInterval(interval);
-  }, [countdown.date]);
+  }, [countdown.date, countdown.createdAt]);
 
-  const getUrgencyColor = (): string => {
+  const getUrgencyColor = () => {
     if (!timeLeft)
-      return "border-gray-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-700";
+      return darkMode
+        ? "border-gray-700 bg-gray-800"
+        : "border-gray-300 bg-gray-50";
     if (timeLeft.isPast)
-      return "border-gray-300 bg-gray-50 dark:bg-gray-800 dark:border-gray-700";
+      return darkMode
+        ? "border-gray-700 bg-gray-800"
+        : "border-gray-300 bg-gray-50";
     if (timeLeft.days <= 1) return "border-red-500 bg-red-50 dark:bg-red-900";
     if (timeLeft.days <= 7)
       return "border-orange-500 bg-orange-50 dark:bg-orange-900";
@@ -77,7 +92,11 @@ export default function Countdown_Card({
 
   if (isCalculating || !timeLeft) {
     return (
-      <div className="border-2 border-gray-200 rounded-xl p-6 bg-white dark:bg-gray-800 animate-pulse">
+      <div
+        className={`border-2 rounded-xl p-6 ${
+          darkMode ? "bg-gray-800 border-gray-700" : "bg-white border-gray-200"
+        } animate-pulse`}
+      >
         <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-3/4 mb-4"></div>
         <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-4"></div>
         <div className="grid grid-cols-4 gap-2">
@@ -91,23 +110,6 @@ export default function Countdown_Card({
       </div>
     );
   }
-
-  // Calculate total seconds for progress bar
-  const totalSeconds =
-    differenceInSeconds(new Date(countdown.date), new Date()) +
-    (timeLeft?.days || 0) * 86400 +
-    (timeLeft?.hours || 0) * 3600 +
-    (timeLeft?.minutes || 0) * 60 +
-    (timeLeft?.seconds || 0);
-
-  const remainingSeconds =
-    (timeLeft?.days || 0) * 86400 +
-    (timeLeft?.hours || 0) * 3600 +
-    (timeLeft?.minutes || 0) * 60 +
-    (timeLeft?.seconds || 0);
-
-  const progressPercent =
-    totalSeconds > 0 ? Math.max(0, (remainingSeconds / totalSeconds) * 100) : 0;
 
   return (
     <>
@@ -132,21 +134,22 @@ export default function Countdown_Card({
           <div className="flex gap-2 ml-2">
             <button
               onClick={() => setShowEditModal(true)}
-              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-2 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-colors"
               aria-label="Edit countdown"
             >
-              <Pencil size={16} className="text-gray-600 dark:text-gray-200" />
+              <Pencil size={16} className="text-gray-600 dark:text-gray-300" />
             </button>
             <button
               onClick={() => setShowDeleteModal(true)}
-              className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              className="p-2 hover:bg-white dark:hover:bg-gray-700 rounded-lg transition-colors"
               aria-label="Delete countdown"
             >
-              <Trash2 size={16} className="text-red-600 dark:text-red-400" />
+              <Trash2 size={16} className="text-red-600" />
             </button>
           </div>
         </div>
 
+        {/* Date */}
         <div className="flex items-center gap-2 mb-4 text-sm text-gray-600 dark:text-gray-300">
           <Calendar size={16} />
           <span>
@@ -161,31 +164,41 @@ export default function Countdown_Card({
           </span>
         </div>
 
+        {/* Countdown Display */}
         {timeLeft.isPast ? (
           <div className="text-center py-4">
-            <p className="text-2xl font-bold text-gray-500 dark:text-gray-400">
+            <p className="text-2xl font-bold text-gray-500 dark:text-gray-300">
               Event Passed
-            </p>
-            <p className="text-sm text-gray-400 dark:text-gray-500 mt-1">
-              {formatDistanceToNow(new Date(countdown.date), {
-                addSuffix: true,
-              })}
             </p>
           </div>
         ) : (
           <>
             <div className="grid grid-cols-4 gap-2 mb-3">
-              <Time_Unit value={timeLeft.days} label="Days" />
-              <Time_Unit value={timeLeft.hours} label="Hours" />
-              <Time_Unit value={timeLeft.minutes} label="Mins" />
-              <Time_Unit value={timeLeft.seconds} label="Secs" />
+              <Time_Unit
+                value={timeLeft.days}
+                label="Days"
+                darkMode={darkMode}
+              />
+              <Time_Unit
+                value={timeLeft.hours}
+                label="Hours"
+                darkMode={darkMode}
+              />
+              <Time_Unit
+                value={timeLeft.minutes}
+                label="Mins"
+                darkMode={darkMode}
+              />
+              <Time_Unit
+                value={timeLeft.seconds}
+                label="Secs"
+                darkMode={darkMode}
+              />
             </div>
-
-            <div className="h-2 w-full bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden">
-              <motion.div
-                className="h-full bg-purple-600 dark:bg-purple-400"
-                style={{ width: `${progressPercent}%` }}
-                animate={{ width: `${progressPercent}%` }}
+            <div className="w-full h-2 bg-gray-300 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className="h-2 bg-purple-600"
+                style={{ width: `${progress}%` }}
               />
             </div>
           </>
@@ -200,9 +213,9 @@ export default function Countdown_Card({
             setShowEditModal(false);
           }}
           onClose={() => setShowEditModal(false)}
+          darkMode={darkMode}
         />
       )}
-
       {showDeleteModal && (
         <DeleteConfirmModal
           countdownName={countdown.name}
@@ -211,6 +224,7 @@ export default function Countdown_Card({
             setShowDeleteModal(false);
           }}
           onClose={() => setShowDeleteModal(false)}
+          darkMode={darkMode}
         />
       )}
     </>
@@ -220,17 +234,18 @@ export default function Countdown_Card({
 interface TimeUnitProps {
   value: number;
   label: string;
+  darkMode?: boolean;
 }
 
-function Time_Unit({ value, label }: TimeUnitProps) {
+function Time_Unit({ value, label, darkMode = false }: TimeUnitProps) {
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg p-3 text-center shadow-sm">
-      <div className="text-2xl font-bold text-gray-900 dark:text-white">
-        {String(value).padStart(2, "0")}
-      </div>
-      <div className="text-xs text-gray-600 dark:text-gray-300 mt-1">
-        {label}
-      </div>
+    <div
+      className={`rounded-lg p-3 text-center shadow-sm ${
+        darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+      }`}
+    >
+      <div className="text-2xl font-bold">{String(value).padStart(2, "0")}</div>
+      <div className="text-xs mt-1">{label}</div>
     </div>
   );
 }

@@ -8,12 +8,14 @@ interface EditCountdownModalProps {
   countdown: Count_down;
   onSave: (updated: Partial<Count_down>) => void;
   onClose: () => void;
+  darkMode?: boolean;
 }
 
 export default function EditCountdownModal({
   countdown,
   onSave,
   onClose,
+  darkMode = false,
 }: EditCountdownModalProps) {
   const [formData, setFormData] = useState({
     name: countdown.name,
@@ -22,7 +24,7 @@ export default function EditCountdownModal({
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!formData.name.trim() || !formData.date) {
@@ -49,14 +51,16 @@ export default function EditCountdownModal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl"
+        className={`${
+          darkMode ? "bg-gray-800 text-white" : "bg-white text-gray-900"
+        } rounded-2xl p-6 max-w-md w-full shadow-2xl`}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Edit Countdown</h2>
+          <h2 className="text-2xl font-bold">Edit Countdown</h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
             aria-label="Close modal"
           >
             <X size={20} />
@@ -65,7 +69,7 @@ export default function EditCountdownModal({
 
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2">
               Event Name <span className="text-red-500">*</span>
             </label>
             <input
@@ -74,14 +78,17 @@ export default function EditCountdownModal({
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
-              maxLength={100}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none ${
+                darkMode
+                  ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  : "bg-white border-gray-300 text-gray-900"
+              }`}
               disabled={isSubmitting}
             />
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2">
               Date & Time <span className="text-red-500">*</span>
             </label>
             <input
@@ -90,13 +97,17 @@ export default function EditCountdownModal({
               onChange={(e) =>
                 setFormData({ ...formData, date: e.target.value })
               }
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 outline-none"
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 outline-none ${
+                darkMode
+                  ? "bg-gray-700 border-gray-600 text-white"
+                  : "bg-white border-gray-300 text-gray-900"
+              }`}
               disabled={isSubmitting}
             />
           </div>
 
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2">
               Description
             </label>
             <textarea
@@ -105,8 +116,11 @@ export default function EditCountdownModal({
                 setFormData({ ...formData, description: e.target.value })
               }
               rows={3}
-              maxLength={200}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 resize-none outline-none"
+              className={`w-full px-4 py-2 border rounded-lg focus:ring-2 resize-none outline-none ${
+                darkMode
+                  ? "bg-gray-700 border-gray-600 text-white placeholder-gray-400"
+                  : "bg-white border-gray-300 text-gray-900"
+              }`}
               disabled={isSubmitting}
             />
           </div>
@@ -116,23 +130,20 @@ export default function EditCountdownModal({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className={`flex-1 px-4 py-2 border rounded-lg ${
+                darkMode
+                  ? "border-gray-600 hover:bg-gray-700"
+                  : "border-gray-300 hover:bg-gray-50"
+              }`}
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center justify-center gap-2"
             >
-              {isSubmitting ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  Saving...
-                </>
-              ) : (
-                "Save"
-              )}
+              {isSubmitting ? "Saving..." : "Save"}
             </button>
           </div>
         </form>
