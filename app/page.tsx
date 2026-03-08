@@ -12,10 +12,9 @@ export default function Home() {
   const [countdowns, setCountdowns] = useState<Count_down[]>([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
 
-  // Load countdowns from localStorage on mount
   useEffect(() => {
-    //loading delay for smooth UX
     const timer = setTimeout(() => {
       const saved = storage.getCountdowns();
       setCountdowns(saved);
@@ -25,7 +24,14 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Add new countdown
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
+
   const handleAdd = (countdown: Count_down) => {
     const newCountdowns = [...countdowns, countdown];
     setCountdowns(newCountdowns);
@@ -33,7 +39,6 @@ export default function Home() {
     setShowAddModal(false);
   };
 
-  // Edit countdown
   const handleEdit = (id: string, updatedCountdown: Partial<Count_down>) => {
     const newCountdowns = countdowns.map((c) =>
       c.id === id ? { ...c, ...updatedCountdown } : c
@@ -42,7 +47,6 @@ export default function Home() {
     storage.saveCountdowns(newCountdowns);
   };
 
-  // Delete countdown
   const handleDelete = (id: string) => {
     const newCountdowns = countdowns.filter((c) => c.id !== id);
     setCountdowns(newCountdowns);
@@ -50,33 +54,40 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to from-purple-50 via-blue-50 to-pink-50 p-4 md:p-8">
+    <div className="min-h-screen bg-gradient-to from-purple-50 via-blue-50 to-pink-50 dark:from-gray-900 dark:via-gray-900 dark:to-black p-4 md:p-8 transition-colors">
       <Toaster position="top-right" />
 
-      {/* Header */}
       <div className="max-w-7xl mx-auto mb-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
-              Event Countdowns 
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-2">
+              Event Countdowns
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               Track your important events and deadlines
             </p>
           </div>
 
-          <button
-            onClick={() => setShowAddModal(true)}
-            disabled={isLoading}
-            className="flex items-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Plus size={20} />
-            New Countdown
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="px-4 py-3 rounded-lg bg-gray-800 text-white dark:bg-white dark:text-black"
+            >
+              Toggle Mode
+            </button>
+
+            <button
+              onClick={() => setShowAddModal(true)}
+              disabled={isLoading}
+              className="flex items-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Plus size={20} />
+              New Countdown
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Loading or Countdown List */}
       {isLoading ? (
         <Loading_Spinner />
       ) : (
@@ -87,7 +98,6 @@ export default function Home() {
         />
       )}
 
-      {/* Add Modal */}
       {showAddModal && (
         <AddCountdownModal
           onAdd={handleAdd}

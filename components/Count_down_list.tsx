@@ -1,3 +1,4 @@
+"use client";
 import Countdown_Card from "./Count_down_card";
 import EmptyState from "./Empty_state";
 import { Count_down } from "../lib/types";
@@ -17,7 +18,6 @@ export default function Countdown_List({
     return <EmptyState />;
   }
 
-  // upcoming events first, then past events
   const sorted = [...countdowns].sort((a, b) => {
     const date_a = new Date(a.date);
     const date_b = new Date(b.date);
@@ -26,11 +26,9 @@ export default function Countdown_List({
     const isPast_a = date_a < now;
     const isPast_b = date_b < now;
 
-    // Past events go to bottom
     if (isPast_a && !isPast_b) return 1;
     if (!isPast_a && isPast_b) return -1;
 
-    // Both upcoming or both past: sort by date
     return date_a.getTime() - date_b.getTime();
   });
 

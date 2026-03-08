@@ -31,19 +31,22 @@ export default function Delete_Confirm_Modal({
       onClick={onClose}
     >
       <div
-        className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl"
+        className="bg-white dark:bg-gray-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-            <AlertTriangle size={32} className="text-red-600" />
+          <div className="w-16 h-16 bg-red-100 dark:bg-red-900 rounded-full flex items-center justify-center mb-4">
+            <AlertTriangle
+              size={32}
+              className="text-red-600 dark:text-red-400"
+            />
           </div>
 
-          <h2 className="text-xl font-bold text-gray-900 mb-2">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
             Delete Countdown?
           </h2>
 
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
             Are you sure you want to delete <strong>"{countdownName}"</strong>?
             This action cannot be undone.
           </p>
@@ -52,7 +55,7 @@ export default function Delete_Confirm_Modal({
             <button
               onClick={onClose}
               disabled={isDeleting}
-              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors disabled:opacity-50"
             >
               Cancel
             </button>
