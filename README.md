@@ -30,14 +30,6 @@ Track all your important events in one beautiful place.
 - One-click delete with confirmation
 - Real-time countdown updates
 
-## What I'd Improve
-
-- Add categories/tags
-- Email/push notifications
-- Recurring events
-- Export/import countdowns
-- Dark mode
-
 ## Tech Stack
 
 - Next.js
